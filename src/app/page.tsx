@@ -2,10 +2,10 @@ import Navbar from "@/components/navbar";
 
 export default function Home() {
   return (
-    <div className="h-screen bg-[#DEEED9] p-15">
+    <div className="h-screen bg-[#EAD9ED] p-15">
       {/* Main container */}
       <div className="container h-full">
-        <div className="bg-[#DEEED9] h-full rounded-3xl shadow-2xl">
+        <div className="bg-[#FFF4FF] h-full rounded-3xl shadow-2xl">
           <Navbar />
 
           {/* Hero section */}
@@ -18,7 +18,7 @@ export default function Home() {
                   <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
                     Overall Wellness
                     <br />
-                    <span className="text-green-600">through Ayurveda</span>
+                    <span className="text-[#5F2C66]">through Ayurveda</span>
                     <br />
                     is our muse
                   </h1>
@@ -29,7 +29,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <button className="px-8 py-4 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
+                  <button className="px-8 py-4 bg-[#5F2C66] text-white font-semibold rounded-full hover:bg-[#793E17] shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
                     Explore More
                   </button>
                 </div>
