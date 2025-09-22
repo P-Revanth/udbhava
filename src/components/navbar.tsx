@@ -38,7 +38,7 @@ export default function Navbar() {
                     <button onClick={() => window.location.href = '/login'} className="px-4 py-2 text-md font-medium text-gray-700 hover:text-[#5F2C66] transition-colors cursor-pointer">
                         Login
                     </button>
-                    <button onClick={() => window.location.href = '/sign-up'} className="px-6 py-2 text-md font-medium bg-[#5F2C66] text-white rounded-full hover:bg-green-700 transition-colors shadow-sm cursor-pointer">
+                    <button onClick={() => window.location.href = '/sign-up'} className="px-6 py-2 text-md font-medium bg-[#5F2C66] text-white rounded-full hover:bg-[#864492] transition-colors shadow-sm cursor-pointer">
                         Sign Up
                     </button>
                 </div>

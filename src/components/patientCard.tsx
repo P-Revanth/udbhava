@@ -66,35 +66,37 @@ const PatientCard: React.FC<PatientCardProps> = ({
             </div>
 
             {/* Content Section */}
-            <div className="p-6 flex-1 flex flex-col justify-between">
+            <div className="p-4 flex-1 flex flex-col justify-between">
                 {/* Name and optional extended info */}
-                <div className="flex-grow flex flex-col justify-center">
-                    <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+                <div className="flex flex-col justify-center">
+                    <h3 className="text-2xl font-bold text-gray-900 text-center mb-2">
                         {name}
                     </h3>
 
                     {/* Extended info - only shown when data is available */}
                     {(age || gender || doshaType || agni) && (
                         <div className="space-y-1 text-center">
-                            {age && (
-                                <p className="text-sm text-gray-600">Age: {age}</p>
-                            )}
-                            {gender && (
-                                <p className="text-sm text-gray-600">Gender: {gender}</p>
-                            )}
-                            <div className="flex justify-center gap-1 mt-2 flex-wrap">
+                            <div className='flex justify-center gap-2 mb-2 flex-wrap'>
+                                {age && (
+                                    <p className="text-sm text-gray-600">Age: {age}</p>
+                                )}
+                                {gender && (
+                                    <p className="text-sm text-gray-600">Gender: {gender}</p>
+                                )}
+                            </div>
+                            <div className="flex justify-center gap-2 mt-3 flex-wrap">
                                 {doshaType && (
-                                    <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                                    <span className="px-4 py-1 bg-orange-100 text-orange-800 text-md rounded-full">
                                         {doshaType}
                                     </span>
                                 )}
                                 {agni && (
-                                    <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                                    <span className="px-4 py-1 bg-red-100 text-red-800 text-md rounded-full">
                                         {agni}
                                     </span>
                                 )}
                                 {activeStatus && (
-                                    <span className={`px-2 py-1 text-xs rounded-full ${activeStatus === 'active'
+                                    <span className={`px-4 py-1 text-md rounded-full ${activeStatus === 'active'
                                         ? 'bg-green-100 text-green-800'
                                         : 'bg-gray-100 text-gray-600'
                                         }`}>

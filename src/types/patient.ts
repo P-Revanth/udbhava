@@ -3,24 +3,24 @@ export interface PatientProfile {
     // Basic Information
     name: string;
     age: number | null;
-    gender: 'male' | 'female' | 'other' | null;
+    weight_kg: number | null;
+    height_cm: number | null;
+    activity_level: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | null;
 
-    // Ayurvedic Assessment
-    dosha: 'Vata' | 'Pitta' | 'Kapha' | 'Vata-Pitta' | 'Pitta-Kapha' | 'Vata-Kapha' | null;
-    agni: 'Sama' | 'Tikshna' | 'Manda' | 'Vishama' | null;
+    // Food Preferences
+    food_preference: 'vegetarian' | 'non_vegetarian' | 'vegan' | 'eggetarian' | null;
+    cuisine_preference: 'north_indian' | 'south_indian' | 'continental' | 'chinese' | 'italian' | 'mexican' | 'mediterranean' | 'other' | null;
+    sub_cuisine_preference: string | null; // depends on cuisine selection
 
     // Health Information
-    allergies: string[];
-    medical_conditions: string[];
-    sleep_schedule: {
-        bedtime: string | null;
-        wake_time: string | null;
-        sleep_quality: 'poor' | 'fair' | 'good' | 'excellent' | null;
-    } | null;
+    diseases: string[];
 
-    // Nutrition Goals
-    calorie_needs: number | null;
-    goals: string[];
+    // Ayurvedic Assessment - Dosha assessment questions
+    body_frame: 'thin_tall' | 'medium_build' | 'well_built' | null;
+    skin_type: 'dry_rough' | 'oily_inflamed' | 'thick_cool' | null;
+    hair_type: 'dry_thin' | 'oily_early_greying' | 'thick_wavy' | null;
+    agni_strength: 'low' | 'moderate' | 'high' | 'irregular' | null;
+    current_season: 'spring' | 'summer' | 'monsoon' | 'autumn' | 'winter' | 'late_winter' | null;
 
     // Assignments
     assignedDietitianId: string;
@@ -33,22 +33,38 @@ export interface PatientProfile {
     updatedAt?: any;
 }
 
+// Cuisine sub-options mapping
+export const CUISINE_SUB_OPTIONS = {
+    north_indian: ['Punjabi', 'Kashmiri', 'Rajasthani', 'Uttar Pradesh', 'Delhi', 'Haryana'],
+    south_indian: ['Tamil', 'Telugu', 'Kerala', 'Karnataka', 'Andhra', 'Hyderabadi'],
+    continental: ['European', 'American', 'British', 'French', 'German', 'Russian'],
+    chinese: ['Cantonese', 'Sichuan', 'Hunan', 'Beijing', 'Shanghai', 'Hakka'],
+    italian: ['Northern Italian', 'Southern Italian', 'Tuscan', 'Roman', 'Neapolitan', 'Sicilian'],
+    mexican: ['Tex-Mex', 'Yucatecan', 'Oaxacan', 'Poblano', 'Veracruzan', 'Jalisco'],
+    mediterranean: ['Greek', 'Turkish', 'Lebanese', 'Moroccan', 'Spanish', 'Israeli'],
+    other: ['Fusion', 'Local', 'Traditional', 'Modern', 'Regional', 'Custom']
+} as const;
+
 // Example patient document structure:
 /*
 patients/{patientId} = {
     name: "John Doe",
-    age: null, // To be filled by dietitian
-    gender: null, // To be filled by dietitian
-    dosha: null, // To be assessed by dietitian
-    agni: null, // To be assessed by dietitian
-    allergies: [], // To be filled by dietitian
-    medical_conditions: [], // To be filled by dietitian
-    sleep_schedule: null, // To be filled by dietitian
-    calorie_needs: null, // To be calculated by dietitian
-    goals: [], // To be set by dietitian
+    age: 30,
+    weight_kg: 70,
+    height_cm: 175,
+    activity_level: "moderate",
+    food_preference: "vegetarian",
+    cuisine_preference: "north_indian",
+    sub_cuisine_preference: "Punjabi",
+    diseases: ["diabetes", "hypertension"],
+    body_frame: "medium_build",
+    skin_type: "oily_inflamed",
+    hair_type: "thick_wavy",
+    agni_strength: "moderate",
+    current_season: "summer",
     assignedDietitianId: "dietitianUID123",
-    activeStatus: "active", // "active" or "not active"
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
+    activeStatus: "active",
+    createdAt: "timestamp",
+    updatedAt: "timestamp"
 }
 */

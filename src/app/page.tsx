@@ -1,3 +1,4 @@
+'use client';
 import Navbar from "@/components/navbar";
 
 export default function Home() {
@@ -29,7 +30,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <button className="px-8 py-4 bg-[#5F2C66] text-white font-semibold rounded-full hover:bg-[#793E17] shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
+                  <button onClick={() => window.location.href = '/sign-up'} className="px-8 py-4 bg-[#5F2C66] text-white font-semibold rounded-full hover:bg-[#864492] shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
                     Explore More
                   </button>
                 </div>

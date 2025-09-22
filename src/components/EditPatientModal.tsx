@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { PatientProfile } from '../types/patient';
+import { PatientProfile, CUISINE_SUB_OPTIONS } from '../types/patient';
 
 interface EditPatientModalProps {
     isOpen: boolean;
@@ -21,14 +21,18 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
     const [formData, setFormData] = useState<Partial<PatientProfile>>({
         name: patientName,
         age: null,
-        gender: null,
-        dosha: null,
-        agni: null,
-        allergies: [],
-        medical_conditions: [],
-        sleep_schedule: null,
-        calorie_needs: null,
-        goals: [],
+        weight_kg: null,
+        height_cm: null,
+        activity_level: null,
+        food_preference: null,
+        cuisine_preference: null,
+        sub_cuisine_preference: null,
+        diseases: [],
+        body_frame: null,
+        skin_type: null,
+        hair_type: null,
+        agni_strength: null,
+        current_season: null,
         activeStatus: 'active'
     });
     const [loading, setLoading] = useState(false);
@@ -52,14 +56,18 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                 setFormData({
                     name: data.name || patientName,
                     age: data.age,
-                    gender: data.gender,
-                    dosha: data.dosha,
-                    agni: data.agni,
-                    allergies: data.allergies || [],
-                    medical_conditions: data.medical_conditions || [],
-                    sleep_schedule: data.sleep_schedule,
-                    calorie_needs: data.calorie_needs,
-                    goals: data.goals || [],
+                    weight_kg: data.weight_kg,
+                    height_cm: data.height_cm,
+                    activity_level: data.activity_level,
+                    food_preference: data.food_preference,
+                    cuisine_preference: data.cuisine_preference,
+                    sub_cuisine_preference: data.sub_cuisine_preference,
+                    diseases: data.diseases || [],
+                    body_frame: data.body_frame,
+                    skin_type: data.skin_type,
+                    hair_type: data.hair_type,
+                    agni_strength: data.agni_strength,
+                    current_season: data.current_season,
                     activeStatus: data.activeStatus || 'active'
                 });
             }
@@ -89,7 +97,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
         }
     };
 
-    const handleArrayFieldChange = (field: 'allergies' | 'medical_conditions' | 'goals', value: string) => {
+    const handleArrayFieldChange = (field: 'diseases', value: string) => {
         if (value.trim()) {
             setFormData(prev => ({
                 ...prev,
@@ -98,10 +106,25 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
         }
     };
 
-    const removeArrayItem = (field: 'allergies' | 'medical_conditions' | 'goals', index: number) => {
+    const removeArrayItem = (field: 'diseases', index: number) => {
         setFormData(prev => ({
             ...prev,
             [field]: (prev[field] || []).filter((_, i) => i !== index)
+        }));
+    };
+
+    // Get sub-cuisine options based on selected cuisine
+    const getSubCuisineOptions = () => {
+        if (!formData.cuisine_preference) return [];
+        return CUISINE_SUB_OPTIONS[formData.cuisine_preference] || [];
+    };
+
+    // Handle cuisine preference change - reset sub-cuisine when cuisine changes
+    const handleCuisineChange = (cuisine: string) => {
+        setFormData(prev => ({
+            ...prev,
+            cuisine_preference: cuisine as any,
+            sub_cuisine_preference: null // Reset sub-cuisine when cuisine changes
         }));
     };
 
@@ -126,7 +149,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     {/* Basic Information */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
                             <input
@@ -138,126 +161,181 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
+                            <input
+                                type="number"
+                                value={formData.weight_kg || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, weight_kg: e.target.value ? parseInt(e.target.value) : null }))}
+                                className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
+                                placeholder="Enter weight in kg"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Height (cm)</label>
+                            <input
+                                type="number"
+                                value={formData.height_cm || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, height_cm: e.target.value ? parseInt(e.target.value) : null }))}
+                                className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
+                                placeholder="Enter height in cm"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Activity Level */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Activity Level</label>
+                        <select
+                            value={formData.activity_level || ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, activity_level: e.target.value as 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | null }))}
+                            className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
+                        >
+                            <option value="">Select activity level</option>
+                            <option value="sedentary">Sedentary</option>
+                            <option value="light">Light</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="active">Active</option>
+                            <option value="very_active">Very Active</option>
+                        </select>
+                    </div>
+
+                    {/* Food Preferences */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Food Preference</label>
                             <select
-                                value={formData.gender || ''}
-                                onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value as 'male' | 'female' | 'other' | null }))}
+                                value={formData.food_preference || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, food_preference: e.target.value as 'vegetarian' | 'non_vegetarian' | 'vegan' | 'eggetarian' | null }))}
                                 className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
                             >
-                                <option value="">Select gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
+                                <option value="">Select food preference</option>
+                                <option value="vegetarian">Vegetarian</option>
+                                <option value="non_vegetarian">Non-Vegetarian</option>
+                                <option value="vegan">Vegan</option>
+                                <option value="eggetarian">Eggetarian</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Cuisine Preferences */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Cuisine Preference</label>
+                            <select
+                                value={formData.cuisine_preference || ''}
+                                onChange={(e) => handleCuisineChange(e.target.value)}
+                                className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
+                            >
+                                <option value="">Select cuisine preference</option>
+                                <option value="north_indian">North Indian</option>
+                                <option value="south_indian">South Indian</option>
+                                <option value="continental">Continental</option>
+                                <option value="chinese">Chinese</option>
+                                <option value="italian">Italian</option>
+                                <option value="mexican">Mexican</option>
+                                <option value="mediterranean">Mediterranean</option>
                                 <option value="other">Other</option>
                             </select>
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Sub-Cuisine Preference</label>
+                            <select
+                                value={formData.sub_cuisine_preference || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, sub_cuisine_preference: e.target.value || null }))}
+                                className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
+                                disabled={!formData.cuisine_preference}
+                            >
+                                <option value="">Select sub-cuisine</option>
+                                {getSubCuisineOptions().map((subCuisine: string) => (
+                                    <option key={subCuisine} value={subCuisine}>
+                                        {subCuisine}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
-                    {/* Ayurvedic Assessment */}
+                    {/* Ayurvedic Assessment Questions */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">Ayurvedic Assessment</h3>
+
+                        {/* Body Frame Question */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">1. Body Frame</label>
+                            <select
+                                value={formData.body_frame || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, body_frame: e.target.value as 'thin_tall' | 'medium_build' | 'well_built' | null }))}
+                                className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
+                            >
+                                <option value="">Select body frame</option>
+                                <option value="thin_tall">Thin, Tall</option>
+                                <option value="medium_build">Medium build</option>
+                                <option value="well_built">Well-built</option>
+                            </select>
+                        </div>
+
+                        {/* Skin Type Question */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">2. Skin</label>
+                            <select
+                                value={formData.skin_type || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, skin_type: e.target.value as 'dry_rough' | 'oily_inflamed' | 'thick_cool' | null }))}
+                                className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
+                            >
+                                <option value="">Select skin type</option>
+                                <option value="dry_rough">Dry, Rough</option>
+                                <option value="oily_inflamed">Oily, Inflamed</option>
+                                <option value="thick_cool">Thick, Cool</option>
+                            </select>
+                        </div>
+
+                        {/* Hair Type Question */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">3. Hair</label>
+                            <select
+                                value={formData.hair_type || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, hair_type: e.target.value as 'dry_thin' | 'oily_early_greying' | 'thick_wavy' | null }))}
+                                className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
+                            >
+                                <option value="">Select hair type</option>
+                                <option value="dry_thin">Dry, Thin</option>
+                                <option value="oily_early_greying">Oily, Early greying</option>
+                                <option value="thick_wavy">Thick, Wavy</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Additional Ayurvedic Assessment */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Dosha Type</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Agni Strength</label>
                             <select
-                                value={formData.dosha || ''}
-                                onChange={(e) => setFormData(prev => ({ ...prev, dosha: e.target.value as any }))}
+                                value={formData.agni_strength || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, agni_strength: e.target.value as 'low' | 'moderate' | 'high' | 'irregular' | null }))}
                                 className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
                             >
-                                <option value="">Select dosha</option>
-                                <option value="Vata">Vata</option>
-                                <option value="Pitta">Pitta</option>
-                                <option value="Kapha">Kapha</option>
-                                <option value="Vata-Pitta">Vata-Pitta</option>
-                                <option value="Pitta-Kapha">Pitta-Kapha</option>
-                                <option value="Vata-Kapha">Vata-Kapha</option>
+                                <option value="">Select agni strength</option>
+                                <option value="low">Low</option>
+                                <option value="moderate">Moderate</option>
+                                <option value="high">High</option>
+                                <option value="irregular">Irregular</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Agni</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Current Season</label>
                             <select
-                                value={formData.agni || ''}
-                                onChange={(e) => setFormData(prev => ({ ...prev, agni: e.target.value as any }))}
+                                value={formData.current_season || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, current_season: e.target.value as 'spring' | 'summer' | 'monsoon' | 'autumn' | 'winter' | 'late_winter' | null }))}
                                 className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
                             >
-                                <option value="">Select agni</option>
-                                <option value="Sama">Sama</option>
-                                <option value="Tikshna">Tikshna</option>
-                                <option value="Manda">Manda</option>
-                                <option value="Vishama">Vishama</option>
+                                <option value="">Select current season</option>
+                                <option value="spring">Spring</option>
+                                <option value="summer">Summer</option>
+                                <option value="monsoon">Monsoon</option>
+                                <option value="autumn">Autumn</option>
+                                <option value="winter">Winter</option>
+                                <option value="late_winter">Late Winter</option>
                             </select>
-                        </div>
-                    </div>
-
-                    {/* Calorie Needs */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Daily Calorie Needs</label>
-                        <input
-                            type="number"
-                            value={formData.calorie_needs || ''}
-                            onChange={(e) => setFormData(prev => ({ ...prev, calorie_needs: e.target.value ? parseInt(e.target.value) : null }))}
-                            className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
-                            placeholder="Enter daily calorie needs"
-                        />
-                    </div>
-
-                    {/* Sleep Schedule */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Sleep Schedule</label>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-xs text-gray-600 mb-1">Bedtime</label>
-                                <input
-                                    type="time"
-                                    value={formData.sleep_schedule?.bedtime || ''}
-                                    onChange={(e) => setFormData(prev => ({
-                                        ...prev,
-                                        sleep_schedule: {
-                                            ...prev.sleep_schedule,
-                                            bedtime: e.target.value || null,
-                                            wake_time: prev.sleep_schedule?.wake_time || null,
-                                            sleep_quality: prev.sleep_schedule?.sleep_quality || null
-                                        }
-                                    }))}
-                                    className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-gray-600 mb-1">Wake Time</label>
-                                <input
-                                    type="time"
-                                    value={formData.sleep_schedule?.wake_time || ''}
-                                    onChange={(e) => setFormData(prev => ({
-                                        ...prev,
-                                        sleep_schedule: {
-                                            ...prev.sleep_schedule,
-                                            bedtime: prev.sleep_schedule?.bedtime || null,
-                                            wake_time: e.target.value || null,
-                                            sleep_quality: prev.sleep_schedule?.sleep_quality || null
-                                        }
-                                    }))}
-                                    className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-gray-600 mb-1">Sleep Quality</label>
-                                <select
-                                    value={formData.sleep_schedule?.sleep_quality || ''}
-                                    onChange={(e) => setFormData(prev => ({
-                                        ...prev,
-                                        sleep_schedule: {
-                                            ...prev.sleep_schedule,
-                                            bedtime: prev.sleep_schedule?.bedtime || null,
-                                            wake_time: prev.sleep_schedule?.wake_time || null,
-                                            sleep_quality: e.target.value as any || null
-                                        }
-                                    }))}
-                                    className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
-                                >
-                                    <option value="">Select quality</option>
-                                    <option value="poor">Poor</option>
-                                    <option value="fair">Fair</option>
-                                    <option value="good">Good</option>
-                                    <option value="excellent">Excellent</option>
-                                </select>
-                            </div>
                         </div>
                     </div>
 
@@ -277,56 +355,52 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                         </p>
                     </div>
 
-                    {/* Array Fields */}
-                    {(['allergies', 'medical_conditions', 'goals'] as const).map((field) => (
-                        <div key={field}>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                {field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </label>
-                            <div className="space-y-2">
-                                {(formData[field] || []).map((item, index) => (
-                                    <div key={index} className="flex items-center space-x-2">
-                                        <span className="flex-1 px-3 py-2 bg-gray-50 rounded-lg text-sm">{item}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeArrayItem(field, index)}
-                                            className="text-red-500 hover:text-red-700 p-1"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                ))}
-                                <div className="flex space-x-2">
-                                    <input
-                                        type="text"
-                                        placeholder={`Add ${field.replace(/_/g, ' ').slice(0, -1)}`}
-                                        className="flex-1 px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
-                                        onKeyPress={(e) => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                const input = e.target as HTMLInputElement;
-                                                handleArrayFieldChange(field, input.value);
-                                                input.value = '';
-                                            }
-                                        }}
-                                    />
+                    {/* Diseases */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Diseases / Medical Conditions</label>
+                        <div className="space-y-2">
+                            {(formData.diseases || []).map((disease, index) => (
+                                <div key={index} className="flex items-center space-x-2">
+                                    <span className="flex-1 px-3 py-2 bg-gray-50 rounded-lg text-sm">{disease}</span>
                                     <button
                                         type="button"
-                                        onClick={(e) => {
-                                            const input = (e.target as HTMLButtonElement).previousElementSibling as HTMLInputElement;
-                                            handleArrayFieldChange(field, input.value);
-                                            input.value = '';
-                                        }}
-                                        className="px-3 py-2 bg-[#5F2C66] text-white rounded-lg hover:bg-[#4A1F4F] transition-colors"
+                                        onClick={() => removeArrayItem('diseases', index)}
+                                        className="text-red-500 hover:text-red-700 p-1"
                                     >
-                                        Add
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
                                     </button>
                                 </div>
+                            ))}
+                            <div className="flex space-x-2">
+                                <input
+                                    type="text"
+                                    placeholder="Add disease or medical condition"
+                                    className="flex-1 px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
+                                    onKeyPress={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            const input = e.target as HTMLInputElement;
+                                            handleArrayFieldChange('diseases', input.value);
+                                            input.value = '';
+                                        }
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        const input = (e.target as HTMLButtonElement).previousElementSibling as HTMLInputElement;
+                                        handleArrayFieldChange('diseases', input.value);
+                                        input.value = '';
+                                    }}
+                                    className="px-3 py-2 bg-[#5F2C66] text-white rounded-lg hover:bg-[#4A1F4F] transition-colors"
+                                >
+                                    Add
+                                </button>
                             </div>
                         </div>
-                    ))}
+                    </div>
 
                     {/* Submit Button */}
                     <div className="flex space-x-3 pt-4">

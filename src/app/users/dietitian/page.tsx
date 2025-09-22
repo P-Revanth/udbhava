@@ -158,30 +158,28 @@ const DietitianDashboard = () => {
     const isPatientProfileComplete = (profile: PatientProfile | undefined): boolean => {
         if (!profile) return false;
 
-        // Check required fields
+        // Check required fields for new schema
         const requiredFields = [
             profile.age,
-            profile.gender,
-            profile.dosha,
-            profile.agni,
-            profile.calorie_needs
+            profile.weight_kg,
+            profile.height_cm,
+            profile.activity_level,
+            profile.food_preference,
+            profile.cuisine_preference,
+            profile.body_frame,
+            profile.skin_type,
+            profile.hair_type,
+            profile.agni_strength,
+            profile.current_season
         ];
 
         // Check if all required fields are filled
         const hasRequiredFields = requiredFields.every(field => field !== null && field !== undefined);
 
-        // Check if at least one array field has content
-        const hasArrayContent = profile.allergies.length > 0 ||
-            profile.medical_conditions.length > 0 ||
-            profile.goals.length > 0;
+        // Check if diseases array has content (optional but good to have)
+        const hasDiseasesInfo = profile.diseases && profile.diseases.length > 0;
 
-        // Check if sleep schedule is filled
-        const hasSleepSchedule = profile.sleep_schedule &&
-            profile.sleep_schedule.bedtime &&
-            profile.sleep_schedule.wake_time &&
-            profile.sleep_schedule.sleep_quality !== null;
-
-        return hasRequiredFields && (hasArrayContent || Boolean(hasSleepSchedule));
+        return hasRequiredFields;
     };
 
     // Generate system todos based on patient profiles
@@ -409,14 +407,18 @@ const DietitianDashboard = () => {
                 const patientProfile: PatientProfile = {
                     name: patientData.name,
                     age: null,
-                    gender: null,
-                    dosha: null,
-                    agni: null,
-                    allergies: [],
-                    medical_conditions: [],
-                    sleep_schedule: null,
-                    calorie_needs: null,
-                    goals: [],
+                    weight_kg: null,
+                    height_cm: null,
+                    activity_level: null,
+                    food_preference: null,
+                    cuisine_preference: null,
+                    sub_cuisine_preference: null,
+                    diseases: [],
+                    body_frame: null,
+                    skin_type: null,
+                    hair_type: null,
+                    agni_strength: null,
+                    current_season: null,
                     assignedDietitianId: user.uid,
                     activeStatus: 'active',
                     createdAt: serverTimestamp(),
@@ -463,14 +465,18 @@ const DietitianDashboard = () => {
                     const patientProfile: PatientProfile = {
                         name: patientData.name,
                         age: null,
-                        gender: null,
-                        dosha: null,
-                        agni: null,
-                        allergies: [],
-                        medical_conditions: [],
-                        sleep_schedule: null,
-                        calorie_needs: null,
-                        goals: [],
+                        weight_kg: null,
+                        height_cm: null,
+                        activity_level: null,
+                        food_preference: null,
+                        cuisine_preference: null,
+                        sub_cuisine_preference: null,
+                        diseases: [],
+                        body_frame: null,
+                        skin_type: null,
+                        hair_type: null,
+                        agni_strength: null,
+                        current_season: null,
                         assignedDietitianId: user.uid,
                         activeStatus: 'active',
                         createdAt: serverTimestamp(),
@@ -701,9 +707,9 @@ const DietitianDashboard = () => {
                                                     name={patient.name}
                                                     profileImage={patient.profileImage}
                                                     age={profile?.age || undefined}
-                                                    gender={profile?.gender || undefined}
-                                                    doshaType={profile?.dosha || undefined}
-                                                    agni={profile?.agni || undefined}
+                                                    gender={'male'} // Temporarily using a placeholder since gender was removed
+                                                    doshaType={undefined} // Will be calculated from assessment in backend
+                                                    agni={profile?.agni_strength as any || undefined}
                                                     activeStatus={profile?.activeStatus || undefined}
                                                     isAddedToDietitian={true}
                                                     showEditButton={true}
@@ -801,9 +807,9 @@ const DietitianDashboard = () => {
                                         name={patient.name}
                                         profileImage={patient.profileImage}
                                         age={profile?.age || undefined}
-                                        gender={profile?.gender || undefined}
-                                        doshaType={profile?.dosha || undefined}
-                                        agni={profile?.agni || undefined}
+                                        gender={'male'} // Temporarily using a placeholder since gender was removed
+                                        doshaType={undefined} // Will be calculated from assessment in backend
+                                        agni={profile?.agni_strength as any || undefined}
                                         activeStatus={profile?.activeStatus || undefined}
                                         isAddedToDietitian={true}
                                         showEditButton={true}
