@@ -147,7 +147,7 @@ const LoginPage = () => {
                     {/* Header */}
                     <div className="text-center space-y-2">
                         <div className="flex items-center justify-center space-x-2 mb-4">
-                            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                            <div className="w-10 h-10 bg-[#5F2C66] rounded-full flex items-center justify-center">
                                 <span className="text-white font-bold text-lg">A</span>
                             </div>
                             <span className="text-2xl font-semibold text-gray-800">AYURVEDA</span>
@@ -179,7 +179,7 @@ const LoginPage = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all peer placeholder-transparent ${errors.email ? 'border-red-300' : 'border-gray-300'}`}
+                                className={`w-full px-4 py-3 text-black border rounded-xl focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent outline-none transition-all peer placeholder-transparent ${errors.email ? 'border-red-300' : 'border-gray-300'}`}
                                 placeholder="Email"
                                 id="email"
                             />
@@ -199,7 +199,7 @@ const LoginPage = () => {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 pr-12 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all peer placeholder-transparent ${errors.password ? 'border-red-300' : 'border-gray-300'}`}
+                                className={`w-full px-4 py-3 pr-12 text-black border rounded-xl focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent outline-none transition-all peer placeholder-transparent ${errors.password ? 'border-red-300' : 'border-gray-300'}`}
                                 placeholder="Password"
                                 id="password"
                             />

@@ -25,6 +25,9 @@ export interface PatientProfile {
     // Assignments
     assignedDietitianId: string;
 
+    // Status
+    activeStatus: 'active' | 'not active';
+
     // Metadata
     createdAt?: any;
     updatedAt?: any;
@@ -44,6 +47,7 @@ patients/{patientId} = {
     calorie_needs: null, // To be calculated by dietitian
     goals: [], // To be set by dietitian
     assignedDietitianId: "dietitianUID123",
+    activeStatus: "active", // "active" or "not active"
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
 }
