@@ -99,7 +99,7 @@ const DietitianCard: React.FC<DietitianCardProps> = ({
                     </div>
                     <p className="text-xs text-gray-500 mt-1">Years Exp.</p>
                 </div>
-
+                
                 {rating && (
                     <div className="text-center">
                         <div className="flex items-center justify-center space-x-1">
