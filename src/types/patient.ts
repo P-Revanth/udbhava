@@ -3,22 +3,23 @@ export interface PatientProfile {
     // Basic Information
     name: string;
     age: number | null;
+    gender: 'male' | 'female' | 'other' | null;
     weight_kg: number | null;
     height_cm: number | null;
     activity_level: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active' | null;
 
     // Food Preferences
-    food_preference: 'vegetarian' | 'non_vegetarian' | 'vegan' | 'eggetarian' | null;
-    cuisine_preference: 'north_indian' | 'south_indian' | 'continental' | 'chinese' | 'italian' | 'mexican' | 'mediterranean' | 'other' | null;
+    food_preference: 'vegetarian' | 'non_vegetarian' | null;
+    cuisine_preference: 'indian' | 'asian' | 'mediterranean' | null;
     sub_cuisine_preference: string | null; // depends on cuisine selection
 
     // Health Information
     diseases: string[];
 
-    // Ayurvedic Assessment - Dosha assessment questions
-    body_frame: 'thin_tall' | 'medium_build' | 'well_built' | null;
-    skin_type: 'dry_rough' | 'oily_inflamed' | 'thick_cool' | null;
-    hair_type: 'dry_thin' | 'oily_early_greying' | 'thick_wavy' | null;
+    // Ayurvedic Assessment - Dosha assessment questions (option + description)
+    body_frame: { option: 'a' | 'b' | 'c'; description: string } | null;
+    skin_type: { option: 'a' | 'b' | 'c'; description: string } | null;
+    hair_type: { option: 'a' | 'b' | 'c'; description: string } | null;
     agni_strength: 'low' | 'moderate' | 'high' | 'irregular' | null;
     current_season: 'spring' | 'summer' | 'monsoon' | 'autumn' | 'winter' | 'late_winter' | null;
 
@@ -35,14 +36,28 @@ export interface PatientProfile {
 
 // Cuisine sub-options mapping
 export const CUISINE_SUB_OPTIONS = {
-    north_indian: ['Punjabi', 'Kashmiri', 'Rajasthani', 'Uttar Pradesh', 'Delhi', 'Haryana'],
-    south_indian: ['Tamil', 'Telugu', 'Kerala', 'Karnataka', 'Andhra', 'Hyderabadi'],
-    continental: ['European', 'American', 'British', 'French', 'German', 'Russian'],
-    chinese: ['Cantonese', 'Sichuan', 'Hunan', 'Beijing', 'Shanghai', 'Hakka'],
-    italian: ['Northern Italian', 'Southern Italian', 'Tuscan', 'Roman', 'Neapolitan', 'Sicilian'],
-    mexican: ['Tex-Mex', 'Yucatecan', 'Oaxacan', 'Poblano', 'Veracruzan', 'Jalisco'],
-    mediterranean: ['Greek', 'Turkish', 'Lebanese', 'Moroccan', 'Spanish', 'Israeli'],
-    other: ['Fusion', 'Local', 'Traditional', 'Modern', 'Regional', 'Custom']
+    indian: ['North Indian', 'South Indian', 'Bengali', 'Rajasthani'],
+    asian: ['Japanese', 'Chinese', 'Thai'],
+    mediterranean: ['Italian', 'Greek']
+} as const;
+
+// Dosha assessment options mapping for backend processing
+export const DOSHA_ASSESSMENT_OPTIONS = {
+    body_frame: {
+        a: { description: "Thin, Tall", dosha: "Vata" },
+        b: { description: "Medium build", dosha: "Pitta" },
+        c: { description: "Well-built", dosha: "Kapha" }
+    },
+    skin_type: {
+        a: { description: "Dry, Rough", dosha: "Vata" },
+        b: { description: "Oily, Inflamed", dosha: "Pitta" },
+        c: { description: "Thick, Cool", dosha: "Kapha" }
+    },
+    hair_type: {
+        a: { description: "Dry, Thin", dosha: "Vata" },
+        b: { description: "Oily, Early greying", dosha: "Pitta" },
+        c: { description: "Thick, Wavy", dosha: "Kapha" }
+    }
 } as const;
 
 // Example patient document structure:

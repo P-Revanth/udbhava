@@ -5,6 +5,7 @@ import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, setDoc, 
 import { db } from '../../../lib/firebase';
 import PatientCard from '../../../components/patientCard';
 import EditPatientModal from '../../../components/EditPatientModal';
+import DietPlanModal from '../../../components/DietPlanModal';
 import TodoList, { TodoItem } from '../../../components/TodoList';
 import DashboardTodo from '../../../components/DashboardTodo';
 import FeedbackSection from '../../../components/FeedbackSection';
@@ -40,6 +41,11 @@ const DietitianDashboard = () => {
     const [patientProfiles, setPatientProfiles] = useState<Record<string, PatientProfile>>({});
     const [todos, setTodos] = useState<TodoItem[]>([]);
     const [lastGeneratedTodos, setLastGeneratedTodos] = useState<string[]>([]);
+    const [generatingPlan, setGeneratingPlan] = useState<string | null>(null);
+    const [dietPlanModalOpen, setDietPlanModalOpen] = useState(false);
+    const [selectedPatientForDietPlan, setSelectedPatientForDietPlan] = useState<{ id: string; name: string } | null>(null);
+    const [dietPlanData, setDietPlanData] = useState<any>(null);
+    const [loadingDietPlan, setLoadingDietPlan] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -161,6 +167,7 @@ const DietitianDashboard = () => {
         // Check required fields for new schema
         const requiredFields = [
             profile.age,
+            profile.gender,
             profile.weight_kg,
             profile.height_cm,
             profile.activity_level,
@@ -182,7 +189,353 @@ const DietitianDashboard = () => {
         return hasRequiredFields;
     };
 
-    // Generate system todos based on patient profiles
+    // API function to request diet plan generation
+    const requestPlan = async (patientId: string) => {
+        try {
+            const resp = await fetch("http://localhost:8000/generate_diet", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ patient_id: patientId })
+            });
+            const data = await resp.json();
+            if (resp.ok && data.status === "success") {
+                // return data;
+                console.log('Diet plan generation response:', data);
+            } else {
+                throw new Error(data.detail || "Failed to generate plan");
+            }
+        } catch (error) {
+            console.error('Error generating diet plan:', error);
+            throw error;
+        }
+    };
+
+    // Handle diet plan generation
+    const handleGenerateDietPlan = async (patientId: string, patientName: string) => {
+        setGeneratingPlan(patientId);
+        try {
+            console.log(`Generating diet plan for ${patientName}...`);
+            const result = await requestPlan(patientId);
+            console.log('Diet plan generated successfully:', result);
+
+            // You can add additional logic here to handle the response
+            // For example, save the plan to the database or show a success message
+            alert(`Diet plan generated successfully for ${patientName}!`);
+
+        } catch (error) {
+            console.error('Failed to generate diet plan:', error);
+            alert(`Failed to generate diet plan for ${patientName}. Please try again.`);
+        } finally {
+            setGeneratingPlan(null);
+        }
+    };
+
+    // Handle opening diet plan modal and fetching diet plan data
+    const handleViewDietPlan = async (patientId: string, patientName: string) => {
+        setSelectedPatientForDietPlan({ id: patientId, name: patientName });
+        setDietPlanModalOpen(true);
+        setLoadingDietPlan(true);
+
+        try {
+            // Fetch diet plans from the subcollection: patients/{patientId}/diet_plans
+            const dietPlansRef = collection(db, 'patients', patientId, 'diet_plans');
+            const dietPlansSnapshot = await getDocs(dietPlansRef);
+
+            if (!dietPlansSnapshot.empty) {
+                // Get the first (most recent) diet plan
+                const dietPlanDoc = dietPlansSnapshot.docs[0];
+                const data = dietPlanDoc.data();
+
+                // Transform the Firestore data to match our modal structure
+                const transformedData = await transformFirestoreDietPlan(data, patientId, patientName);
+                setDietPlanData(transformedData);
+            } else {
+                // No diet plan exists, show empty state
+                setDietPlanData({
+                    patientId,
+                    patientName,
+                    plan: null,
+                    chart: null
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching diet plan:', error);
+            // Create mock data for demo purposes if Firestore fetch fails
+            setDietPlanData(createMockDietPlan(patientId, patientName));
+        } finally {
+            setLoadingDietPlan(false);
+        }
+    };
+
+    // Transform Firestore data structure to match our modal interface
+    const transformFirestoreDietPlan = async (firestoreData: any, patientId: string, patientName: string) => {
+        const transformedPlan: any = {
+            patientId,
+            patientName,
+            chart: {
+                chartUrl: firestoreData.chart_url || null,
+                doshaType: firestoreData.dosha_alignment_score ? 'Detected from Assessment' : 'Unknown',
+                recommendations: [
+                    'Follow the personalized meal plan',
+                    'Maintain regular eating schedule',
+                    'Stay hydrated with warm water',
+                    'Practice mindful eating'
+                ]
+            },
+            plan: null
+        };
+
+        if (firestoreData.plan) {
+            // Group recipes by meal type
+            const mealGroups: { [key: string]: any[] } = {};
+
+            // Extract all recipes from the plan structure
+            Object.keys(firestoreData.plan).forEach(key => {
+                if (Array.isArray(firestoreData.plan[key])) {
+                    // Handle meal arrays like "Breakfast", "Lunch", "Dinner"
+                    const mealType = key;
+                    if (!mealGroups[mealType]) {
+                        mealGroups[mealType] = [];
+                    }
+                    mealGroups[mealType] = firestoreData.plan[key];
+                }
+            });
+
+            // Transform to our meal structure
+            const meals = Object.keys(mealGroups).map(mealType => {
+                const recipes = mealGroups[mealType].map((recipe: any) => ({
+                    name: recipe.name || 'Unknown Recipe',
+                    calories: recipe.calories || 0,
+                    protein: recipe.protein || 0,
+                    fat: recipe.fat || 0,
+                    carbs: recipe.carbs || 0,
+                    fiber: recipe.fiber || 0,
+                    ingredients: recipe.ingredients || [],
+                    instructions: recipe.instructions || [],
+                    ayurvedic_properties: recipe.ayurvedic_properties || {},
+                    cuisine: recipe.cuisine || '',
+                    sub_cuisine: recipe.sub_cuisine || '',
+                    meal_type: recipe.meal_type || mealType,
+                    is_veg: recipe.is_veg !== undefined ? recipe.is_veg : true,
+                    gunas: recipe.gunas || [],
+                    rasa: recipe.rasa || [],
+                    virya: recipe.virya || '',
+                    seasonal_suitability: recipe.seasonal_suitability || ''
+                }));
+
+                const totalCalories = recipes.reduce((sum: number, recipe: any) => sum + recipe.calories, 0);
+                const totalProtein = recipes.reduce((sum: number, recipe: any) => sum + recipe.protein, 0);
+                const totalFat = recipes.reduce((sum: number, recipe: any) => sum + recipe.fat, 0);
+                const totalCarbs = recipes.reduce((sum: number, recipe: any) => sum + recipe.carbs, 0);
+
+                return {
+                    type: mealType,
+                    recipes,
+                    totalCalories,
+                    totalProtein,
+                    totalFat,
+                    totalCarbs
+                };
+            });
+
+            const dailyCalories = meals.reduce((sum, meal) => sum + meal.totalCalories, 0);
+            const dailyProtein = meals.reduce((sum, meal) => sum + meal.totalProtein, 0);
+            const dailyFat = meals.reduce((sum, meal) => sum + meal.totalFat, 0);
+            const dailyCarbs = meals.reduce((sum, meal) => sum + meal.totalCarbs, 0);
+
+            transformedPlan.plan = {
+                meals,
+                dailyCalories,
+                dailyProtein,
+                dailyFat,
+                dailyCarbs,
+                recommendations: [
+                    'Follow the prescribed meal timings',
+                    'Chew food slowly and mindfully',
+                    'Avoid drinking cold water with meals',
+                    'Practice gratitude before eating'
+                ]
+            };
+        }
+
+        return transformedPlan;
+    };    // Create mock diet plan data for demonstration
+    const createMockDietPlan = (patientId: string, patientName: string) => {
+        return {
+            patientId,
+            patientName,
+            plan: {
+                meals: [
+                    {
+                        type: 'Breakfast',
+                        recipes: [
+                            {
+                                name: 'Oatmeal with Almonds and Honey',
+                                calories: 350,
+                                protein: 12,
+                                fat: 8,
+                                carbs: 58,
+                                fiber: 8,
+                                ingredients: ['Rolled oats', 'Almonds', 'Honey', 'Cinnamon', 'Milk'],
+                                instructions: [
+                                    'Boil water and add oats',
+                                    'Cook for 5-7 minutes',
+                                    'Add almonds and honey',
+                                    'Sprinkle with cinnamon'
+                                ]
+                            },
+                            {
+                                name: 'Fresh Fruit Salad',
+                                calories: 120,
+                                protein: 2,
+                                fat: 1,
+                                carbs: 30,
+                                fiber: 5,
+                                ingredients: ['Apple', 'Banana', 'Orange', 'Pomegranate'],
+                                instructions: ['Cut fruits into small pieces', 'Mix gently', 'Serve fresh']
+                            }
+                        ],
+                        totalCalories: 470,
+                        totalProtein: 14,
+                        totalFat: 9,
+                        totalCarbs: 88
+                    },
+                    {
+                        type: 'Lunch',
+                        recipes: [
+                            {
+                                name: 'Quinoa Vegetable Bowl',
+                                calories: 420,
+                                protein: 16,
+                                fat: 12,
+                                carbs: 65,
+                                fiber: 8,
+                                ingredients: ['Quinoa', 'Mixed vegetables', 'Olive oil', 'Herbs', 'Lemon'],
+                                instructions: [
+                                    'Cook quinoa in vegetable broth',
+                                    'Sauté vegetables with olive oil',
+                                    'Combine quinoa and vegetables',
+                                    'Season with herbs and lemon'
+                                ]
+                            },
+                            {
+                                name: 'Herbal Tea',
+                                calories: 5,
+                                protein: 0,
+                                fat: 0,
+                                carbs: 1,
+                                ingredients: ['Ginger', 'Turmeric', 'Honey'],
+                                instructions: ['Boil water with ginger and turmeric', 'Add honey to taste']
+                            }
+                        ],
+                        totalCalories: 425,
+                        totalProtein: 16,
+                        totalFat: 12,
+                        totalCarbs: 66
+                    },
+                    {
+                        type: 'Dinner',
+                        recipes: [
+                            {
+                                name: 'Lentil Soup with Vegetables',
+                                calories: 280,
+                                protein: 18,
+                                fat: 6,
+                                carbs: 45,
+                                fiber: 12,
+                                ingredients: ['Red lentils', 'Carrots', 'Celery', 'Onions', 'Spices'],
+                                instructions: [
+                                    'Soak lentils for 30 minutes',
+                                    'Chop vegetables finely',
+                                    'Cook lentils with vegetables',
+                                    'Season with Ayurvedic spices'
+                                ]
+                            },
+                            {
+                                name: 'Steamed Rice',
+                                calories: 150,
+                                protein: 3,
+                                fat: 1,
+                                carbs: 33,
+                                ingredients: ['Basmati rice', 'Water', 'Salt'],
+                                instructions: ['Wash rice thoroughly', 'Cook in 2:1 water ratio', 'Steam for 15 minutes']
+                            }
+                        ],
+                        totalCalories: 430,
+                        totalProtein: 21,
+                        totalFat: 7,
+                        totalCarbs: 78
+                    }
+                ],
+                dailyCalories: 1325,
+                dailyProtein: 51,
+                dailyFat: 28,
+                dailyCarbs: 232,
+                recommendations: [
+                    'Eat meals at regular intervals',
+                    'Chew food slowly and mindfully',
+                    'Drink warm water throughout the day',
+                    'Avoid eating late at night'
+                ]
+            },
+            chart: {
+                doshaType: 'Vata-Pitta',
+                recommendations: [
+                    'Eat warm, moist, and grounding foods',
+                    'Include sweet, sour, and salty tastes',
+                    'Avoid cold and raw foods',
+                    'Maintain regular meal times'
+                ],
+                foods: {
+                    beneficial: ['Rice', 'Oats', 'Sweet fruits', 'Ghee', 'Warm milk', 'Cooked vegetables'],
+                    neutral: ['Quinoa', 'Nuts', 'Seeds', 'Herbal teas'],
+                    avoid: ['Cold drinks', 'Raw vegetables', 'Spicy foods', 'Caffeine', 'Processed foods']
+                },
+                lifestyle: [
+                    'Practice regular meditation',
+                    'Get adequate sleep (7-8 hours)',
+                    'Exercise moderately and regularly',
+                    'Create a calm eating environment'
+                ]
+            }
+        };
+    };
+
+    // Handle closing diet plan modal
+    const handleCloseDietPlanModal = () => {
+        setDietPlanModalOpen(false);
+        setSelectedPatientForDietPlan(null);
+        setDietPlanData(null);
+        setLoadingDietPlan(false);
+    };
+
+    // Handle publishing diet plan to patient
+    const handlePublishDietPlan = async (patientId: string) => {
+        try {
+            // Find the diet plan document and mark it as published
+            const dietPlansRef = collection(db, 'patients', patientId, 'diet_plans');
+            const q = query(dietPlansRef);
+            const snapshot = await getDocs(q);
+
+            if (!snapshot.empty) {
+                // Update the latest diet plan to mark as published
+                const latestDietPlan = snapshot.docs[0];
+                await updateDoc(latestDietPlan.ref, {
+                    published: true,
+                    publishedAt: serverTimestamp(),
+                    publishedBy: user?.uid
+                });
+
+                alert('Diet plan published successfully! The patient will be notified.');
+                handleCloseDietPlanModal();
+            } else {
+                alert('No diet plan found to publish.');
+            }
+        } catch (error) {
+            console.error('Error publishing diet plan:', error);
+            alert('Failed to publish diet plan. Please try again.');
+        }
+    };    // Generate system todos based on patient profiles
     const generateSystemTodos = (): TodoItem[] => {
         const systemTodos: TodoItem[] = [];
         const existingTodos = TodoStorage.loadTodos();
@@ -407,6 +760,7 @@ const DietitianDashboard = () => {
                 const patientProfile: PatientProfile = {
                     name: patientData.name,
                     age: null,
+                    gender: null,
                     weight_kg: null,
                     height_cm: null,
                     activity_level: null,
@@ -465,6 +819,7 @@ const DietitianDashboard = () => {
                     const patientProfile: PatientProfile = {
                         name: patientData.name,
                         age: null,
+                        gender: null,
                         weight_kg: null,
                         height_cm: null,
                         activity_level: null,
@@ -577,10 +932,8 @@ const DietitianDashboard = () => {
                         {/* Center Logo */}
                         <div className="flex-1 flex justify-center">
                             <div className="flex items-center space-x-2">
-                                <div className="w-8 h-8 bg-[#5F2C66] rounded-full flex items-center justify-center">
-                                    <span className="text-white font-bold text-sm">A</span>
-                                </div>
-                                <span className="text-xl font-bold text-gray-900">Ayurveda</span>
+                                <img src="/images/logo.png" alt="Logo" className="w-10 h-10" />
+                                <span className="text-xl font-bold text-gray-900">AYURAAHARYA</span>
                             </div>
                         </div>
 
@@ -692,29 +1045,33 @@ const DietitianDashboard = () => {
                         {/* Dashboard Content - Recent Patients, Todo Tasks, and Feedback */}
                         <div className="flex gap-6 mb-10 h-[580px]">
                             {/* Recent Active Patients */}
-                            <div className='flex flex-col flex-1 h-full items-start'>
+                            <div className='flex flex-col flex-1 h-full items-start max-w-2xl'>
                                 <h1 className='text-3xl font-bold text-gray-900 mb-6'>Recent Active Patients</h1>
-                                <div className="flex-1 w-full overflow-y-auto">
-                                    <div className='grid grid-cols-1 lg:grid-cols-3 gap-2 h-fit'>
+                                <div className="flex-1 w-full overflow-y-auto items-start">
+                                    <div className='grid grid-cols-1 lg:grid-cols-2 gap-2 h-fit'>
                                         {activePatients.slice(0, 6).filter((patient) => {
                                             const profile = patientProfiles[patient.uid];
                                             return !profile || profile.activeStatus === 'active'; // Show if no profile exists or if active
                                         }).map((patient) => {
                                             const profile = patientProfiles[patient.uid];
+                                            const isProfileComplete = isPatientProfileComplete(profile);
                                             return (
                                                 <PatientCard
                                                     key={patient.uid}
                                                     name={patient.name}
                                                     profileImage={patient.profileImage}
                                                     age={profile?.age || undefined}
-                                                    gender={'male'} // Temporarily using a placeholder since gender was removed
+                                                    gender={profile?.gender || undefined}
                                                     doshaType={undefined} // Will be calculated from assessment in backend
                                                     agni={profile?.agni_strength as any || undefined}
                                                     activeStatus={profile?.activeStatus || undefined}
                                                     isAddedToDietitian={true}
                                                     showEditButton={true}
                                                     onEditProfile={() => handleEditPatient(patient.uid, patient.name)}
-                                                    onClick={() => console.log(`View ${patient.name} profile`)}
+                                                    onGenerateDietPlan={() => handleGenerateDietPlan(patient.uid, patient.name)}
+                                                    isGeneratingPlan={generatingPlan === patient.uid}
+                                                    canGeneratePlan={isProfileComplete}
+                                                    onClick={() => handleViewDietPlan(patient.uid, patient.name)}
                                                 />
                                             );
                                         })}
@@ -735,16 +1092,20 @@ const DietitianDashboard = () => {
                             </div>
 
                             {/* Dashboard Todo Preview */}
-                            <DashboardTodo
-                                onTaskClick={handleDashboardTaskClick}
-                                onTaskComplete={handleDashboardTaskComplete}
-                            />
+                            <div className='flex flex-col flex-1 h-full items-center'>
+                                <DashboardTodo
+                                    onTaskClick={handleDashboardTaskClick}
+                                    onTaskComplete={handleDashboardTaskComplete}
+                                />
+                            </div>
 
                             {/* Feedback Section */}
-                            <FeedbackSection
-                                patientProfiles={patientProfiles}
-                                activePatients={activePatients}
-                            />
+                            <div className='flex flex-col h-full items-center'>
+                                <FeedbackSection
+                                    patientProfiles={patientProfiles}
+                                    activePatients={activePatients}
+                                />
+                            </div>
                         </div>
                     </>
                 )}
@@ -801,20 +1162,24 @@ const DietitianDashboard = () => {
                         <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
                             {activePatients.map((patient) => {
                                 const profile = patientProfiles[patient.uid];
+                                const isProfileComplete = isPatientProfileComplete(profile);
                                 return (
                                     <PatientCard
                                         key={patient.uid}
                                         name={patient.name}
                                         profileImage={patient.profileImage}
                                         age={profile?.age || undefined}
-                                        gender={'male'} // Temporarily using a placeholder since gender was removed
+                                        gender={profile?.gender || undefined}
                                         doshaType={undefined} // Will be calculated from assessment in backend
                                         agni={profile?.agni_strength as any || undefined}
                                         activeStatus={profile?.activeStatus || undefined}
                                         isAddedToDietitian={true}
                                         showEditButton={true}
                                         onEditProfile={() => handleEditPatient(patient.uid, patient.name)}
-                                        onClick={() => console.log(`View ${patient.name} profile`)}
+                                        onGenerateDietPlan={() => handleGenerateDietPlan(patient.uid, patient.name)}
+                                        isGeneratingPlan={generatingPlan === patient.uid}
+                                        canGeneratePlan={isProfileComplete}
+                                        onClick={() => handleViewDietPlan(patient.uid, patient.name)}
                                     />
                                 );
                             })}
@@ -839,6 +1204,15 @@ const DietitianDashboard = () => {
                     </div>
                 )}
             </main>
+
+            {/* Diet Plan Modal */}
+            <DietPlanModal
+                isOpen={dietPlanModalOpen}
+                onClose={handleCloseDietPlanModal}
+                dietPlan={dietPlanData}
+                isLoading={loadingDietPlan}
+                onPublish={handlePublishDietPlan}
+            />
 
             {/* Edit Patient Modal */}
             {selectedPatient && (

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 interface PatientCardProps {
@@ -10,6 +12,10 @@ interface PatientCardProps {
     onEditProfile?: () => void;
     isLoading?: boolean;
     showEditButton?: boolean; // Controls whether to show edit button (for dietitian's patients)
+    // Generate Diet Plan functionality
+    onGenerateDietPlan?: () => void;
+    isGeneratingPlan?: boolean;
+    canGeneratePlan?: boolean; // True when profile is complete
     // Optional extended fields - will be shown when available
     age?: number;
     gender?: 'male' | 'female' | 'other';
@@ -28,6 +34,9 @@ const PatientCard: React.FC<PatientCardProps> = ({
     onEditProfile,
     isLoading = false,
     showEditButton = false,
+    onGenerateDietPlan,
+    isGeneratingPlan = false,
+    canGeneratePlan = false,
     age,
     gender,
     doshaType,
@@ -45,9 +54,9 @@ const PatientCard: React.FC<PatientCardProps> = ({
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg w-70 h-96 mx-auto overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
-            {/* Large Profile Image */}
-            <div className="h-48 bg-gradient-to-b from-gray-300 to-gray-400 relative overflow-hidden flex-shrink-0">
+        <div className="bg-white rounded-2xl shadow-lg w-70 h-auto max-w-sm mx-auto overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
+            {/* Profile Image - Reduced height */}
+            <div className="h-32 bg-gradient-to-b from-gray-300 to-gray-400 relative overflow-hidden flex-shrink-0">
                 {profileImage ? (
                     <img
                         src={profileImage}
@@ -56,8 +65,8 @@ const PatientCard: React.FC<PatientCardProps> = ({
                     />
                 ) : (
                     <div className="w-full h-full bg-gradient-to-b from-gray-400 via-gray-500 to-gray-600 flex items-center justify-center">
-                        <div className="w-20 h-20 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-2xl">
+                        <div className="w-16 h-16 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                            <span className="text-white font-bold text-lg">
                                 {getInitials(name)}
                             </span>
                         </div>
@@ -65,61 +74,58 @@ const PatientCard: React.FC<PatientCardProps> = ({
                 )}
             </div>
 
-            {/* Content Section */}
-            <div className="p-4 flex-1 flex flex-col justify-between">
-                {/* Name and optional extended info */}
-                <div className="flex flex-col justify-center">
-                    <h3 className="text-2xl font-bold text-gray-900 text-center mb-2">
-                        {name}
-                    </h3>
+            {/* Content Section - Optimized spacing */}
+            <div className="p-3 flex-1 flex flex-col">
+                {/* Name and basic info */}
+                <div className="text-center mb-3">
+                    <div onClick={onClick} className='flex items-center justify-center space-x-2 hover:cursor-pointer rounded-full'>
+                        <h3 className="text-lg font-bold text-gray-900 mb-1">
+                            {name}
+                        </h3>
+                        <img src="/arrow.svg" alt="arrow" className='w-4 h-4 text-gray-400' />
+                    </div>
 
-                    {/* Extended info - only shown when data is available */}
-                    {(age || gender || doshaType || agni) && (
-                        <div className="space-y-1 text-center">
-                            <div className='flex justify-center gap-2 mb-2 flex-wrap'>
-                                {age && (
-                                    <p className="text-sm text-gray-600">Age: {age}</p>
-                                )}
-                                {gender && (
-                                    <p className="text-sm text-gray-600">Gender: {gender}</p>
-                                )}
-                            </div>
-                            <div className="flex justify-center gap-2 mt-3 flex-wrap">
-                                {doshaType && (
-                                    <span className="px-4 py-1 bg-orange-100 text-orange-800 text-md rounded-full">
-                                        {doshaType}
-                                    </span>
-                                )}
-                                {agni && (
-                                    <span className="px-4 py-1 bg-red-100 text-red-800 text-md rounded-full">
-                                        {agni}
-                                    </span>
-                                )}
-                                {activeStatus && (
-                                    <span className={`px-4 py-1 text-md rounded-full ${activeStatus === 'active'
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-gray-100 text-gray-600'
-                                        }`}>
-                                        {activeStatus === 'active' ? 'Active' : 'Completed'}
-                                    </span>
-                                )}
-                            </div>
+                    {/* Age and Gender - Always on same line if available */}
+                    {(age || gender) && (
+                        <p className="text-sm text-gray-600 mb-2">
+                            {age && `Age: ${age}`}
+                            {age && gender && ' • '}
+                            {gender && `Gender: ${gender}`}
+                        </p>
+                    )}
+
+                    {/* Status badges - Reduced spacing */}
+                    {(doshaType || agni || activeStatus) && (
+                        <div className="flex justify-center gap-1 flex-wrap mb-2">
+                            {agni && (
+                                <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                                    {agni}
+                                </span>
+                            )}
+                            {activeStatus && (
+                                <span className={`px-2 py-1 text-xs rounded-full ${activeStatus === 'active'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-gray-100 text-gray-600'
+                                    }`}>
+                                    {activeStatus === 'active' ? 'Active' : 'Completed'}
+                                </span>
+                            )}
                         </div>
                     )}
                 </div>
 
-                {/* Action Button - Fixed at bottom */}
-                <div className="space-y-2 flex-shrink-0">
+                {/* Action Buttons - Compact spacing */}
+                <div className="space-y-2 mt-auto">
                     {onAddToDietitian && canBeAdded && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (!isAddedToDietitian) {
+                                if (!isAddedToDietitian && onAddToDietitian) {
                                     onAddToDietitian();
                                 }
                             }}
                             disabled={isAddedToDietitian || isLoading}
-                            className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center space-x-2 ${isAddedToDietitian
+                            className={`w-full py-2 px-3 rounded-xl font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-2 ${isAddedToDietitian
                                 ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
                                 : isLoading
                                     ? 'bg-orange-300 text-white cursor-not-allowed'
@@ -148,7 +154,7 @@ const PatientCard: React.FC<PatientCardProps> = ({
                     )}
 
                     {onAddToDietitian && !canBeAdded && !isAddedToDietitian && (
-                        <div className="w-full py-3 px-4 rounded-xl bg-red-100 text-red-600 text-sm font-medium text-center">
+                        <div className="w-full py-2 px-3 rounded-xl bg-red-100 text-red-600 text-sm font-medium text-center">
                             Assigned to Another Dietitian
                         </div>
                     )}
@@ -159,7 +165,7 @@ const PatientCard: React.FC<PatientCardProps> = ({
                                 e.stopPropagation();
                                 onEditProfile();
                             }}
-                            className="w-full py-2 px-4 bg-blue-100 text-blue-700 rounded-xl font-medium text-sm hover:bg-blue-200 transition-colors flex items-center justify-center space-x-2"
+                            className="w-full py-2 px-3 bg-blue-100 text-blue-700 rounded-xl font-medium text-sm hover:bg-blue-200 transition-colors flex items-center justify-center space-x-2"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -168,10 +174,50 @@ const PatientCard: React.FC<PatientCardProps> = ({
                         </button>
                     )}
 
+                    {onGenerateDietPlan && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onGenerateDietPlan();
+                            }}
+                            disabled={!canGeneratePlan || isGeneratingPlan}
+                            className={`w-full py-2 px-3 rounded-xl font-medium text-sm transition-colors flex items-center justify-center space-x-2 ${!canGeneratePlan
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : isGeneratingPlan
+                                    ? 'bg-green-300 text-white cursor-not-allowed'
+                                    : 'bg-green-500 text-white hover:bg-green-600'
+                                }`}
+                        >
+                            {isGeneratingPlan ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span>Generating...</span>
+                                </>
+                            ) : !canGeneratePlan ? (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Complete Profile First</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span>Generate Diet Plan</span>
+                                </>
+                            )}
+                        </button>
+                    )}
+
                     {onClick && !showEditButton && (
                         <button
                             onClick={onClick}
-                            className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm hover:bg-gray-200 transition-colors"
+                            className="w-full py-2 px-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm hover:bg-gray-200 transition-colors"
                         >
                             View Profile
                         </button>

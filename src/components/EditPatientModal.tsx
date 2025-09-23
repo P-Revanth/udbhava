@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { PatientProfile, CUISINE_SUB_OPTIONS } from '../types/patient';
+import { PatientProfile, CUISINE_SUB_OPTIONS, DOSHA_ASSESSMENT_OPTIONS } from '../types/patient';
 
 interface EditPatientModalProps {
     isOpen: boolean;
@@ -21,6 +21,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
     const [formData, setFormData] = useState<Partial<PatientProfile>>({
         name: patientName,
         age: null,
+        gender: null,
         weight_kg: null,
         height_cm: null,
         activity_level: null,
@@ -56,6 +57,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                 setFormData({
                     name: data.name || patientName,
                     age: data.age,
+                    gender: data.gender,
                     weight_kg: data.weight_kg,
                     height_cm: data.height_cm,
                     activity_level: data.activity_level,
@@ -119,6 +121,24 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
         return CUISINE_SUB_OPTIONS[formData.cuisine_preference] || [];
     };
 
+    // Handle dosha assessment question changes
+    const handleAssessmentChange = (field: 'body_frame' | 'skin_type' | 'hair_type', option: 'a' | 'b' | 'c') => {
+        const assessmentData = DOSHA_ASSESSMENT_OPTIONS[field][option];
+        setFormData(prev => ({
+            ...prev,
+            [field]: {
+                option: option,
+                description: assessmentData.description
+            }
+        }));
+    };
+
+    // Get current option value for assessment fields
+    const getAssessmentValue = (field: 'body_frame' | 'skin_type' | 'hair_type') => {
+        const value = formData[field];
+        return value && typeof value === 'object' ? value.option : '';
+    };
+
     // Handle cuisine preference change - reset sub-cuisine when cuisine changes
     const handleCuisineChange = (cuisine: string) => {
         setFormData(prev => ({
@@ -149,7 +169,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     {/* Basic Information */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
                             <input
@@ -159,6 +179,19 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                                 className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
                                 placeholder="Enter age"
                             />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                            <select
+                                value={formData.gender || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value as 'male' | 'female' | 'other' | null }))}
+                                className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
+                            >
+                                <option value="">Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
@@ -205,14 +238,12 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                             <label className="block text-sm font-medium text-gray-700 mb-1">Food Preference</label>
                             <select
                                 value={formData.food_preference || ''}
-                                onChange={(e) => setFormData(prev => ({ ...prev, food_preference: e.target.value as 'vegetarian' | 'non_vegetarian' | 'vegan' | 'eggetarian' | null }))}
+                                onChange={(e) => setFormData(prev => ({ ...prev, food_preference: e.target.value as 'vegetarian' | 'non_vegetarian' | null }))}
                                 className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
                             >
                                 <option value="">Select food preference</option>
                                 <option value="vegetarian">Vegetarian</option>
                                 <option value="non_vegetarian">Non-Vegetarian</option>
-                                <option value="vegan">Vegan</option>
-                                <option value="eggetarian">Eggetarian</option>
                             </select>
                         </div>
                     </div>
@@ -227,14 +258,9 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                                 className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
                             >
                                 <option value="">Select cuisine preference</option>
-                                <option value="north_indian">North Indian</option>
-                                <option value="south_indian">South Indian</option>
-                                <option value="continental">Continental</option>
-                                <option value="chinese">Chinese</option>
-                                <option value="italian">Italian</option>
-                                <option value="mexican">Mexican</option>
+                                <option value="indian">Indian</option>
+                                <option value="asian">Asian</option>
                                 <option value="mediterranean">Mediterranean</option>
-                                <option value="other">Other</option>
                             </select>
                         </div>
                         <div>
@@ -263,14 +289,14 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">1. Body Frame</label>
                             <select
-                                value={formData.body_frame || ''}
-                                onChange={(e) => setFormData(prev => ({ ...prev, body_frame: e.target.value as 'thin_tall' | 'medium_build' | 'well_built' | null }))}
+                                value={getAssessmentValue('body_frame')}
+                                onChange={(e) => handleAssessmentChange('body_frame', e.target.value as 'a' | 'b' | 'c')}
                                 className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
                             >
                                 <option value="">Select body frame</option>
-                                <option value="thin_tall">Thin, Tall</option>
-                                <option value="medium_build">Medium build</option>
-                                <option value="well_built">Well-built</option>
+                                <option value="a">a) Thin, Tall</option>
+                                <option value="b">b) Medium build</option>
+                                <option value="c">c) Well-built</option>
                             </select>
                         </div>
 
@@ -278,14 +304,14 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">2. Skin</label>
                             <select
-                                value={formData.skin_type || ''}
-                                onChange={(e) => setFormData(prev => ({ ...prev, skin_type: e.target.value as 'dry_rough' | 'oily_inflamed' | 'thick_cool' | null }))}
+                                value={getAssessmentValue('skin_type')}
+                                onChange={(e) => handleAssessmentChange('skin_type', e.target.value as 'a' | 'b' | 'c')}
                                 className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
                             >
                                 <option value="">Select skin type</option>
-                                <option value="dry_rough">Dry, Rough</option>
-                                <option value="oily_inflamed">Oily, Inflamed</option>
-                                <option value="thick_cool">Thick, Cool</option>
+                                <option value="a">a) Dry, Rough</option>
+                                <option value="b">b) Oily, Inflamed</option>
+                                <option value="c">c) Thick, Cool</option>
                             </select>
                         </div>
 
@@ -293,14 +319,14 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">3. Hair</label>
                             <select
-                                value={formData.hair_type || ''}
-                                onChange={(e) => setFormData(prev => ({ ...prev, hair_type: e.target.value as 'dry_thin' | 'oily_early_greying' | 'thick_wavy' | null }))}
+                                value={getAssessmentValue('hair_type')}
+                                onChange={(e) => handleAssessmentChange('hair_type', e.target.value as 'a' | 'b' | 'c')}
                                 className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5F2C66] focus:border-transparent"
                             >
                                 <option value="">Select hair type</option>
-                                <option value="dry_thin">Dry, Thin</option>
-                                <option value="oily_early_greying">Oily, Early greying</option>
-                                <option value="thick_wavy">Thick, Wavy</option>
+                                <option value="a">a) Dry, Thin</option>
+                                <option value="b">b) Oily, Early greying</option>
+                                <option value="c">c) Thick, Wavy</option>
                             </select>
                         </div>
                     </div>
