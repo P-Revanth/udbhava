@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signInWithEmail, signInWithGoogle, getRedirectUrl } from '../../lib/auth';
 import { useAuth } from '../../contexts/AuthContext';
@@ -280,19 +282,19 @@ const LoginPage = () => {
 
                     {/* Sign Up Link */}
                     <p className="text-center text-gray-600">
-                        Don't have an account?{' '}
-                        <a
+                        Don&apos;t have an account?{' '}
+                        <Link   
                             href="/sign-up"
                             className="text-green-600 font-semibold hover:text-green-700 hover:underline transition-colors"
                         >
                             Sign Up
-                        </a>
+                        </Link>
                     </p>
                 </div>
 
                 {/* Back to Home */}
                 <div className="text-center mt-6">
-                    <a
+                    <Link
                         href="/"
                         className="text-gray-500 hover:text-gray-700 transition-colors flex items-center justify-center space-x-2"
                     >
@@ -300,7 +302,7 @@ const LoginPage = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         <span>Back to Home</span>
-                    </a>
+                    </Link>
                 </div>
             </div>
         </div>

@@ -1,5 +1,6 @@
 'use client';
 import Navbar from "@/components/navbar";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -17,9 +18,9 @@ export default function Home() {
               <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
                 <div className="space-y-3 lg:space-y-4">
                   <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
-                    Food Isn't Just Nutrition,
+                    Food Isn&apos;t Just Nutrition,
                     <br className="hidden sm:block" />
-                    It's Medicine—Discover the Healing
+                    It&apos;s Medicine—Discover the Healing
                     <span className="text-[#5F2C66]"> Power of Ayurveda</span>
                     <br className="hidden sm:block" />
                     in Your Daily Plate.
@@ -41,10 +42,12 @@ export default function Home() {
 
               {/* Right content - Product showcase */}
               <div className="relative order-first lg:order-last sm:z-10 md:z-0">
-                <img
+                <Image
                   src="/images/home-page-img.jpg"
                   alt="home-image"
                   className="w-full h-auto rounded-2xl md:rounded-3xl lg:rounded-4xl sm:z-10 shadow-lg"
+                  width={600}
+                  height={400}
                 />
               </div>
 

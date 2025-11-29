@@ -9,7 +9,6 @@ import {
     doc,
     setDoc,
     getDoc,
-    collection,
     serverTimestamp
 } from "firebase/firestore";
 import { auth, db, googleProvider } from "./firebase";

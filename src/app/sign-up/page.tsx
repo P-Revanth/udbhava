@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signUpWithEmail } from '../../lib/auth';
 import { useAuth } from '../../contexts/AuthContext';
@@ -349,7 +350,7 @@ const SignUpPage = () => {
 
                 {/* Back to Home */}
                 <div className="text-center mt-6">
-                    <a
+                    <Link
                         href="/"
                         className="text-gray-500 hover:text-gray-700 transition-colors flex items-center justify-center space-x-2"
                     >
@@ -357,7 +358,7 @@ const SignUpPage = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                         <span>Back to Home</span>
-                    </a>
+                    </Link>
                 </div>
             </div>
         </div>
