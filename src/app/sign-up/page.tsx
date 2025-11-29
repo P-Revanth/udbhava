@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signUpWithEmail } from '../../lib/auth';
 import { useAuth } from '../../contexts/AuthContext';
@@ -145,9 +146,7 @@ const SignUpPage = () => {
                     {/* Header */}
                     <div className="text-center space-y-2">
                         <div className="flex items-center justify-center space-x-2 mb-4">
-                            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                                <span className="text-white font-bold text-lg">A</span>
-                            </div>
+                            <Image src="/images/logo.png" alt="Logo" width={40} height={40} className="lg:w-10 lg:h-10" />
                             <span className="text-2xl font-semibold text-gray-800">Ayuraaharya</span>
                         </div>
                         <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
