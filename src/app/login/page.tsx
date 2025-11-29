@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signInWithEmail, signInWithGoogle, getRedirectUrl } from '../../lib/auth';
@@ -17,7 +17,7 @@ interface FormErrors {
     submit?: string;
 }
 
-const LoginPage = () => {
+const LoginForm = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user } = useAuth();
@@ -152,7 +152,7 @@ const LoginPage = () => {
                             <div className="w-10 h-10 bg-[#5F2C66] rounded-full flex items-center justify-center">
                                 <span className="text-white font-bold text-lg">A</span>
                             </div>
-                            <span className="text-2xl font-semibold text-gray-800">AYURVEDA</span>
+                            <span className="text-2xl font-semibold text-gray-800">Ayuraaharya</span>
                         </div>
                         <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
                         <p className="text-gray-600">Sign in to your wellness account</p>
@@ -283,7 +283,7 @@ const LoginPage = () => {
                     {/* Sign Up Link */}
                     <p className="text-center text-gray-600">
                         Don&apos;t have an account?{' '}
-                        <Link   
+                        <Link
                             href="/sign-up"
                             className="text-green-600 font-semibold hover:text-green-700 hover:underline transition-colors"
                         >
@@ -306,6 +306,31 @@ const LoginPage = () => {
                 </div>
             </div>
         </div>
+    );
+}
+
+const LoginPage = () => {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#EAD9ED] flex items-center justify-center p-4">
+                <div className="w-full max-w-md">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 space-y-6">
+                        <div className="text-center space-y-2">
+                            <div className="flex items-center justify-center space-x-2 mb-4">
+                                <div className="w-10 h-10 bg-[#5F2C66] rounded-full flex items-center justify-center">
+                                    <span className="text-white font-bold text-lg">A</span>
+                                </div>
+                                <span className="text-2xl font-semibold text-gray-800">Ayuraaharya</span>
+                            </div>
+                            <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
+                            <p className="text-gray-600">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
     );
 }
 

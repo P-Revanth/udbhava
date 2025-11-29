@@ -148,7 +148,7 @@ const SignUpPage = () => {
                             <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                                 <span className="text-white font-bold text-lg">A</span>
                             </div>
-                            <span className="text-2xl font-semibold text-gray-800">AYURVEDA</span>
+                            <span className="text-2xl font-semibold text-gray-800">Ayuraaharya</span>
                         </div>
                         <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
                         <p className="text-gray-600">Join our wellness community today</p>
