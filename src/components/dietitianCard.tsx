@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface DietitianCardProps {
     name: string;
@@ -43,10 +44,12 @@ const DietitianCard: React.FC<DietitianCardProps> = ({
             {/* Profile Image */}
             <div className="flex justify-center mb-6">
                 {profileImage ? (
-                    <img
+                    <Image  
                         src={profileImage}
                         alt={`Dr. ${name}`}
-                        className="w-32 h-32 rounded-3xl object-cover"
+                        width={128}
+                        height={128}
+                        className="rounded-3xl object-cover"
                     />
                 ) : (
                     <div className="w-32 h-32 bg-gradient-to-br from-[#5F2C66] to-[#8B4D9B] rounded-3xl flex items-center justify-center">

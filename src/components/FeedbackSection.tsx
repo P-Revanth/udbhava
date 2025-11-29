@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 
 interface Feedback {
@@ -16,7 +17,7 @@ interface FeedbackSectionProps {
     activePatients: any[];
 }
 
-const FeedbackSection: React.FC<FeedbackSectionProps> = ({ patientProfiles, activePatients }) => {
+const FeedbackSection: React.FC<FeedbackSectionProps> = ({ activePatients }) => {
     const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
 
     // Generate sample feedback data

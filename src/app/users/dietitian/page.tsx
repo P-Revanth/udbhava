@@ -1,5 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useAuth, withAuth } from '../../../contexts/AuthContext';
 import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
@@ -40,9 +43,11 @@ const DietitianDashboard = () => {
     const [selectedPatient, setSelectedPatient] = useState<{ id: string; name: string } | null>(null);
     const [patientProfiles, setPatientProfiles] = useState<Record<string, PatientProfile>>({});
     const [todos, setTodos] = useState<TodoItem[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [lastGeneratedTodos, setLastGeneratedTodos] = useState<string[]>([]);
     const [generatingPlan, setGeneratingPlan] = useState<string | null>(null);
     const [dietPlanModalOpen, setDietPlanModalOpen] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [selectedPatientForDietPlan, setSelectedPatientForDietPlan] = useState<{ id: string; name: string } | null>(null);
     const [dietPlanData, setDietPlanData] = useState<any>(null);
     const [loadingDietPlan, setLoadingDietPlan] = useState(false);
@@ -184,8 +189,6 @@ const DietitianDashboard = () => {
         const hasRequiredFields = requiredFields.every(field => field !== null && field !== undefined);
 
         // Check if diseases array has content (optional but good to have)
-        const hasDiseasesInfo = profile.diseases && profile.diseases.length > 0;
-
         return hasRequiredFields;
     };
 
@@ -932,7 +935,7 @@ const DietitianDashboard = () => {
                         {/* Center Logo */}
                         <div className="flex-1 flex justify-center">
                             <div className="flex items-center space-x-2">
-                                <img src="/images/logo.png" alt="Logo" className="w-10 h-10" />
+                                <Image src="/images/logo.png" alt="Logo" width={40} height={40} className="w-10 h-10" />
                                 <span className="text-xl font-bold text-gray-900">AYURAAHARYA</span>
                             </div>
                         </div>
@@ -1003,14 +1006,14 @@ const DietitianDashboard = () => {
                                         {loading ? '...' : patientCount}
                                     </p>
                                 </div>
-                                <img src="/group.svg" alt="total" className='w-12 h-12 mt-2' />
+                                <Image src="/group.svg" alt="total" width={48} height={48} className='mt-2' />
                             </div>
                             <div className='flex bg-white p-4 pr-6 pl-6 rounded-2xl shadow-md justify-between'>
                                 <div className='flex flex-col space-x-2'>
                                     <h3 className='text-xl font-semibold text-gray-900'>Your Patients:</h3>
                                     <p className='text-2xl font-bold text-gray-900'>{activePatients.length}</p>
                                 </div>
-                                <img src="/group.svg" alt="your-patients" className='w-12 h-12 mt-2' />
+                                <Image src="/group.svg" alt="your-patients" width={48} height={48} className='mt-2' />
                             </div>
                             <div className='flex bg-white p-4 pr-6 pl-6 rounded-2xl shadow-md justify-between'>
                                 <div className='flex flex-col space-x-2'>
@@ -1022,7 +1025,7 @@ const DietitianDashboard = () => {
                                         }).length}
                                     </p>
                                 </div>
-                                <img src="/active.svg" alt="active" className='w-12 h-12 mt-2' />
+                                <Image src="/active.svg" alt="active" width={48} height={48} className='mt-2' />
                             </div>
                             <div className='flex bg-white p-4 pr-6 pl-6 rounded-2xl shadow-md justify-between'>
                                 <div className='flex flex-col space-x-2'>
@@ -1031,7 +1034,7 @@ const DietitianDashboard = () => {
                                         {todos.filter(todo => !todo.isCompleted).length}
                                     </p>
                                 </div>
-                                <img src="/pending.svg" alt="pending" className='w-12 h-12 mt-2' />
+                                <Image src="/pending.svg" alt="pending" width={48} height={48} className='mt-2' />
                             </div>
                             {/* <div className='flex bg-white p-4 pr-6 pl-6 rounded-2xl shadow-md justify-between'>
                                 <div className='flex flex-col space-x-2'>
@@ -1084,7 +1087,7 @@ const DietitianDashboard = () => {
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                                                     </svg>
                                                     <p className="text-gray-500 text-lg mb-2">No active patients yet</p>
-                                                    <p className="text-gray-400 text-sm">Start by adding patients from the "Patients" tab.</p>
+                                                    <p className="text-gray-400 text-sm">Start by adding patients from the &quot;Patients&quot; tab.</p>
                                                 </div>
                                             )}
                                     </div>
@@ -1185,7 +1188,7 @@ const DietitianDashboard = () => {
                             })}
                             {activePatients.length === 0 && (
                                 <div className="col-span-full text-center py-12">
-                                    <p className="text-gray-500 text-lg">No patients added yet. Go to "Patients" tab to add patients to your care.</p>
+                                    <p className="text-gray-500 text-lg">No patients added yet. Go to &quot;Patients&quot; tab to add patients to your care.</p>
                                 </div>
                             )}
                         </div>

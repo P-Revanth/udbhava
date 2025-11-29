@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Patient collection structure for Firestore
 export interface PatientProfile {
     // Basic Information

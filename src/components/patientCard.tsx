@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 interface PatientCardProps {
     name: string;
@@ -58,10 +59,12 @@ const PatientCard: React.FC<PatientCardProps> = ({
             {/* Profile Image - Reduced height */}
             <div className="h-32 bg-gradient-to-b from-gray-300 to-gray-400 relative overflow-hidden flex-shrink-0">
                 {profileImage ? (
-                    <img
+                    <Image
                         src={profileImage}
                         alt={`${name}'s profile`}
                         className="w-full h-full object-cover"
+                        width={128}
+                        height={128}
                     />
                 ) : (
                     <div className="w-full h-full bg-gradient-to-b from-gray-400 via-gray-500 to-gray-600 flex items-center justify-center">
@@ -82,7 +85,7 @@ const PatientCard: React.FC<PatientCardProps> = ({
                         <h3 className="text-lg font-bold text-gray-900 mb-1">
                             {name}
                         </h3>
-                        <img src="/arrow.svg" alt="arrow" className='w-4 h-4 text-gray-400' />
+                        <Image src="/arrow.svg" alt="arrow" width={16} height={16} className='text-gray-400' />
                     </div>
 
                     {/* Age and Gender - Always on same line if available */}

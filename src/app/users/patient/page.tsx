@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useAuth, withAuth } from '../../../contexts/AuthContext';
 import DietitianCard from '../../../components/dietitianCard';
 import { getDietitianProfile } from '../../../lib/dietitian';
@@ -101,6 +103,7 @@ const PatientDashboard = () => {
                 unsubscribe();
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     const fetchDietPlan = async () => {
@@ -393,7 +396,11 @@ const PatientDashboard = () => {
                 <div className="w-full px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-4">
                         <div className="flex items-center space-x-3">
-                            <img src="/images/logo.png" alt="Logo" className="w-10 h-10" />
+                            <Image
+                                src="/images/logo.png"
+                                alt="Logo"
+                                width={40}
+                                height={40} />
                             <h1 className="text-xl font-semibold text-gray-900">AYURAAHARYA</h1>
                         </div>
 
@@ -681,7 +688,7 @@ const PatientDashboard = () => {
                                                 </svg>
                                             </div>
                                             <h3 className="text-lg font-medium text-gray-900 mb-2">No Meal Plan Available</h3>
-                                            <p className="text-gray-500">Your dietitian hasn't published a meal plan for you yet.</p>
+                                            <p className="text-gray-500">Your dietitian hasn&apos;t published a meal plan for you yet.</p>
                                         </div>
                                     )}
                                 </div>
@@ -703,10 +710,12 @@ const PatientDashboard = () => {
                                     ) : dietPlan ? (
                                         <div className="space-y-4">
                                             {dietPlan.chart_url ? (
-                                                <img
+                                                <Image
                                                     src={dietPlan.chart_url}
                                                     alt="Diet Chart"
                                                     className="w-full h-auto rounded-lg shadow-md"
+                                                    width={600}
+                                                    height={400}
                                                 />
                                             ) : (
                                                 <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -740,7 +749,7 @@ const PatientDashboard = () => {
                                                 </svg>
                                             </div>
                                             <h3 className="text-lg font-medium text-gray-900 mb-2">No Diet Chart Available</h3>
-                                            <p className="text-gray-500">Your dietitian hasn't published a diet chart for you yet.</p>
+                                            <p className="text-gray-500">Your dietitian hasn&apos;t published a diet chart for you yet.</p>
                                         </div>
                                     )}
                                 </div>

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -377,7 +379,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({
                             <option value="not active">Not Active - Service completed</option>
                         </select>
                         <p className="text-xs text-gray-500 mt-1">
-                            Active patients will appear in the dashboard's recent active patients section
+                            Active patients will appear in the dashboard&apos;s recent active patients section
                         </p>
                     </div>
 

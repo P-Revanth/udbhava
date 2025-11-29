@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 interface Recipe {
     name: string;
@@ -199,9 +200,11 @@ const DietPlanModal: React.FC<DietPlanModalProps> = ({
                                             <div className="bg-white rounded-xl p-4 shadow-sm">
                                                 <h4 className="font-semibold text-gray-900 mb-3">Personalized Diet Chart</h4>
                                                 <div className="relative">
-                                                    <img
+                                                    <Image
                                                         src={dietPlan.chart.chartUrl}
                                                         alt="Personalized Diet Chart"
+                                                        width={600}
+                                                        height={400}
                                                         className="w-full h-auto rounded-lg border border-gray-200"
                                                         onError={(e) => {
                                                             e.currentTarget.style.display = 'none';

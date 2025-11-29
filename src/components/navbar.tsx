@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,7 +35,7 @@ export default function Navbar() {
                 {/* Center - Logo/Brand (always visible) */}
                 <div className="flex items-center lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2">
                     <div className="flex items-center space-x-2">
-                        <img src="/images/logo.png" alt="Logo" className="w-8 h-8 lg:w-10 lg:h-10" />
+                        <Image src="/images/logo.png" alt="Logo" width={40} height={40} className="lg:w-10 lg:h-10" />
                         <span className="text-lg lg:text-xl font-semibold text-gray-800">AYURAAHARYA</span>
                     </div>
                 </div>
